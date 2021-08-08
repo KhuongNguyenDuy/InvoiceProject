@@ -45,6 +45,8 @@ Route::get('/ajax-request-item', 'InvoiceController@getItem');
 //save file project to excel file
 Route::get('/projectexport{id}', 'ProjectController@export');
 
+//test export excel use php
+Route::get('/export{invoice_id}={type}', 'InvoiceController@export');
 
 
 

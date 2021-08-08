@@ -40,13 +40,13 @@
                                 $tax = config('global.tax'); //take tax in file global
                             ?>
                             @for ($y = 0; $y < $invoice_details->count();$y++)
-                                <?php $sub_total += $invoice_details[$y]->amount; ?>
+                                <?php $sub_total += $invoice_details[0]->amount; ?>
                                 <tr>
                                     <td>{{++$stt}}</td>
-                                    <td>{{$invoice_details[$y]->item_name}}</td>
-                                    <td>{{$invoice_details[$y]->quantity}}</td>
-                                    <td><?php echo number_format($invoice_details[$y]->price); ?></td>
-                                    <td><?php echo number_format($invoice_details[$y]->amount); ?></td>
+                                    <td>{{$invoice_details[0]->item_name}}</td>
+                                    <td>{{$invoice_details[0]->quantity}}</td>
+                                    <td><?php echo number_format($invoice_details[0]->price); ?></td>
+                                    <td><?php echo number_format($invoice_details[0]->amount); ?></td>
                                 </tr>
                             @endfor
                                 <tr>
@@ -84,9 +84,13 @@
                         <i><div class="billed"><span class="font-weight-bold">Tình trạng hoá đơn:</span><span class="ml-1">{{$status}}</span></div></i>
                     </div>
                 </div>
-                <div class="text-right mb-3"><a href="{{URL::to('/projectexport'.$invoice_details[0]->id)}}"><button class="btn btn-danger btn-sm mr-5" type="button">Xuất file</button></a></div>
-                <a href="{{ url('/') }}/export{{$invoice_details[0]->id}}=xlsx" class="btn btn-success">Export to .xlsx</a>
-                <a href="{{ url('/') }}/export{{$invoice_details[0]->id}}=xls" class="btn btn-primary">Export to .xls</a>
+                <h1>Export Data to Excel File in Laravel</h1>
+                <br>
+                <div class="form-group">
+                
+                <a href="{{ url('/') }}/export{{$invoice_details[0]->id}}xlsx" class="btn btn-success">Export to .xlsx</a>
+                <a href="{{ url('/') }}/export{{$invoice_details[0]->id}}xls" class="btn btn-primary">Export to .xls</a>
+                </div>
             </div>
         </div>
     </div>
