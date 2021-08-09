@@ -171,6 +171,7 @@ class InvoiceController extends Controller
         $spreadsheet->getActiveSheet()->mergeCells('E12:F12')->setCellValue('E12','234567890');//phone
         $spreadsheet->getActiveSheet()->mergeCells('H12:I12')->setCellValue('H12','f23456789');//fax
         $spreadsheet->getActiveSheet()->mergeCells('E13:F13')->setCellValue('E13','345678');//estimate
+        $spreadsheet->getActiveSheet()->mergeCells('D18:G18');
         $spreadsheet->getActiveSheet()->mergeCells('I13:J13')->setCellValue('I13','');
         $spreadsheet->getActiveSheet()->mergeCells('E14:F14')->setCellValue('E14','');
         $spreadsheet->getActiveSheet()->mergeCells('I14:J14')->setCellValue('I14','');
@@ -187,32 +188,32 @@ class InvoiceController extends Controller
         $sheet->getStyle('C18:J'.$item_count)->applyFromArray($styleArray);        
         $sheet->setCellValue('C18','#');
         $sheet->setCellValue('D18','項目');
-        $sheet->setCellValue('E18','数量');
-        $sheet->setCellValue('F18','単価（円）');
-        $sheet->setCellValue('G18','合計（円）');
+        $sheet->setCellValue('H18','数量');
+        $sheet->setCellValue('I18','単価（円）');
+        $sheet->setCellValue('J18','合計（円）');
         $sheet->getStyle('C18:J18')->getFont()->setBold(true);
         $spreadsheet->getActiveSheet()->getStyle('C18:J18')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
         $spreadsheet->getActiveSheet()->getStyle('C18:J18')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
         $spreadsheet->getActiveSheet()->getStyle('C18:J18')->getAlignment()->setWrapText(true);
-       // $spreadsheet->getActiveSheet()->getStyle('C18:J18')->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+       
         $rows = 19;
         for ( $i = 0; $i < $invoice_details->count(); $i++ ) { 
-            $sheet->setCellValue('C' . $rows, $i);
+            $spreadsheet->getActiveSheet()->mergeCells('D'.$rows.':G'.$rows);
+            $spreadsheet->getActiveSheet()->getStyle('C'.$rows)->getNumberFormat()->setFormatCode('0');
+            $spreadsheet->getActiveSheet()->getStyle('C'.$rows)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+            $spreadsheet->getActiveSheet()->getStyle('C'.$rows)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $spreadsheet->getActiveSheet()->getStyle('C'.$rows)->getAlignment()->setWrapText(true);
+            $sheet->setCellValue('C' . $rows, $i+1);
             $sheet->setCellValue('D' . $rows, $invoice_details[$i]->item_name);
-            $sheet->setCellValue('E' . $rows, $invoice_details[$i]->quantity);
-            $sheet->setCellValue('F' . $rows, $invoice_details[$i]->price);
-            $sheet->setCellValue('G' . $rows, $invoice_details[$i]->amount);
+            $sheet->setCellValue('H' . $rows, $invoice_details[$i]->quantity);
+            $sheet->setCellValue('I' . $rows, $invoice_details[$i]->price);
+            $sheet->setCellValue('J' . $rows, $invoice_details[$i]->amount);
+            $rows++;
         }
+        $sheet->setCellValue('C' . $rows,$invoice_details->count()+1);
+        $sheet->setCellValue('D' . $rows, '以上');
     
-        // foreach($employees as $empDetails){
-        //     $sheet->setCellValue('A' . $rows, $empDetails['id']);
-        //     $sheet->setCellValue('B' . $rows, $empDetails['name']);
-        //     $sheet->setCellValue('C' . $rows, $empDetails['age']);
-        //     $sheet->setCellValue('D' . $rows, $empDetails['skills']);
-        //     $sheet->setCellValue('E' . $rows, $empDetails['address']);
-        //     $sheet->setCellValue('F' . $rows, $empDetails['designation']);
-        //     $rows++;
-        //     }
+
         //$spreadsheet->getActiveSheet()->getRowDimension('10')->setRowHeight(100, 'pt');
        
         
