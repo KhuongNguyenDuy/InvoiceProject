@@ -15,7 +15,7 @@
 			</tr>
 		</thead>
 		<tbody>	
-		<?php $stt=0;?>
+		<?php $stt=0; ?>
 		@foreach($projects as $project)
 			<tr>
 				<td class="col-sm-1 display-text">{{++$stt}} </td>

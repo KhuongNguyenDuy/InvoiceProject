@@ -11,4 +11,7 @@ class invoice_detail extends Model
     protected $table = 'invoice_detail';
     protected $primaryKey = ['invoice_id', 'item_id'];
     public $incrementing = false;
+    protected $fillable = [
+        'invoice_id', 'item_id', 'quantity', 'price', 'amount'
+    ];
 }

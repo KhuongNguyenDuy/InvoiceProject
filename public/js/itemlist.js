@@ -1,19 +1,8 @@
 $(document).ready(function(){
-	$('#tab_logic tbody').on('keyup change',function(){
-		calc();
-	});
-	$('#tax').on('keyup change',function(){
-		calc_total();
-	});
-	
-    $('#soluong').on('keyup change',function(){
-		alert("fadsf");
-	});
-    $('#tax').on('keyup change',function(){
-		    alert("fadsf");
-	    });
+
+
 	//get phone, name customer
-	$('#khachang').change(function(){
+	$('#khachhang').change(function(){
         var idc = $(this).val();                            
         $.ajax({
                 type:'get',
@@ -33,46 +22,71 @@ $(document).ready(function(){
             });
     });
 	//get item when change project
-	$('#project').change(function(){
-		var projectid = $(this).val();                            
-		$.ajax({
-			type:'get',
-			url:'/ajax-request-item',
-			data:{id:projectid},
-			success:function(data){
+	// $('#project').change(function(){
+	// 	var projectid = $(this).val();                            
+	// 	$.ajax({
+	// 		type:'get',
+	// 		url:'/ajax-request-item',
+	// 		data:{id:projectid},
+	// 		success:function(data){
 				
-				$('#test').html(data);              
-			}
+	// 			$('#test').html(data);              
+	// 		}
+	// 	});
+	// });
+
+	/**
+	 * change project -> load item of project
+	 */
+	$('#project').change(function(){
+		var projectid = $(this).val();                           
+		location.href = '/get-item'+projectid;
+	});
+	/**
+	 * js keyup change add to cart
+	 */
+	$(document).ready(function(){
+		$('#tab_logic tbody').on('keyup change',function(){
+			$('#tab_logic tbody tr').each(function(i, element) {
+				var html = $(this).html();
+				if(html!=''){
+					var qty = $(this).find('.qty').val();
+					var price = $(this).find('.price').val();
+					$(this).find('.total').val(qty*price);
+					calc_total();
+				}
+			});
 		});
 	});
+	/**
+	 * function get value amount when add to cart
+	 */
+	function calc(){
+		$('#tab_logic tbody tr').each(function(i, element) {
+			var html = $(this).html();
+			if(html!='')
+			{
+				var qty = $(this).find('.qty').val();
+				var price = $(this).find('.price').val();
+				$(this).find('.total').val(qty*price);
+				
+				calc_total();
+			}
+		});
+	}
+	/**
+	 * function get total invoice
+	 */
+	function calc_total(){
+		total=0;
+		$('.total').each(function() {
+			total += parseInt($(this).val());
+		});
+		 $('#sub_total').val(total);
+		 tax_sum=total/100*$('#tax').val();
+		 $('#tax_amount').val(tax_sum);
+		 $('#total_amount').val((tax_sum+total));
+	}
 
 });
 
-   
-
-function calc()
-{
-	$('#tab_logic tbody tr').each(function(i, element) {
-		var html = $(this).html();
-		if(html!='')
-		{
-			var qty = $(this).find('.qty').val();
-			var price = $(this).find('.price').val();
-			$(this).find('.total').val(qty*price);
-			
-			calc_total();
-		}
-    });
-}
-
-function calc_total()
-{
-	total=0;
-	$('.total').each(function() {
-        total += parseInt($(this).val());
-    });
-	$('#sub_total').val(total.toFixed(2));
-	tax_sum=total/100*$('#tax').val();
-	$('#tax_amount').val(tax_sum.toFixed(2));
-	$('#total_amount').val((tax_sum+total).toFixed(2));
-}

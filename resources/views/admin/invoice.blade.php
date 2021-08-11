@@ -3,9 +3,13 @@
 @section('title-detail', 'Danh sách Invoice')
 @section('content')
 <div class="add-button">
-	<button type="button" class="btn btn-success btn-lg"> <a href="{{URL::to('/addinvoice')}}">+ Add Invoice</a></button>
+	<button type="button" class="btn btn-success btn-lg"> <a href="{{URL::to('/get-project')}}">+ Add Invoice</a></button>
 </div>
-
+@if (session('success'))
+<div class="alert alert-success">
+	{{ session('success') }}
+</div>
+@endif
 	<table class="table table-hover table-bordered table-border-margin"> 
 		<thead>
 			<tr style="background-color: black;">
@@ -17,8 +21,7 @@
 				<th>Expire Date</th>             
 				<th>Total</th>
 				<th>Status</th>
-                <th>Invoice Detail</th>
-				
+                <th>Invoice Detail</th>				
 			</tr>
 		</thead>
 		<tbody>	

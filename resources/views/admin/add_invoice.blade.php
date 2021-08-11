@@ -15,19 +15,20 @@
     $date->modify('last day of next month');
 ?>
 <div style="font-size: 0.8rem; margin:20px;">
-    <form>
+    <form action='/addInvoice' method="post" name="form_add_invoice" onsubmit="return validateForm()">
+    @csrf
         <div class="form-row">
             <div class="form-group col-md-1">
                 <label for="ngaytao">Ngày tạo:</label>
             </div>
             <div class="form-group col-md-5">
-                <input class="date form-control" id="ngaytao" value="<?php echo date("Y-m-d"); ?>" type="text" >                          
+                <input class="date form-control" name="ngaytao" id="ngaytao" value="<?php echo date("Y-m-d"); ?>" type="text" >                          
             </div>
             <div class="form-group col-md-1">
                  <label for="hantt">Hạn thanh toán:</label>
             </div>
             <div class="form-group col-md-5">               
-                <input class="date form-control" id="hantt" type="text" value="<?php echo $date->format('Y-m-d');?>" >             
+                <input class="date form-control" id="hantt" name="hantt" type="text" value="<?php echo $date->format('Y-m-d');?>" >             
                 <!--#add datepicker-->
                 <script type="text/javascript">
                     $('.date').datepicker({  
@@ -43,7 +44,7 @@
                 <label for="khachang">Khách hàng:</label>
             </div>
             <div class="form-group col-md-5">                
-                <select class="form-control" id="khachang">
+                <select class="form-control" id="khachhang" name="khachhang" required oninvalid="this.setCustomValidity('Xin vui lòng chọn khách hàng')" oninput="this.setCustomValidity('')">
                 <option value="" selected disabled>Chọn khách hàng..</option>
                     @foreach($customers as $c)
                         <option value="{{$c->id}}">{{$c->name}}</option>
@@ -76,18 +77,14 @@
                 <label for="project">Project:</label>     
             </div>
             <div class="form-group col-md-5">
-                <select class="form-control" id="project" data-depen>
-                <option value="" selected disabled>Chọn project..</option>
-                    @foreach($projects as $p)
-                        <option value="{{$p->id}}">{{$p->name}}</option>
-                    @endforeach   
-                </select>                               
+                <input type="text" class="form-control" value="{{$projects->name}}" disabled>
+                <input type="hidden" id="projectId" name="projectId" value="{{$projects->id}}">
             </div>
             <div class="form-group col-md-1">
                 <label for="estimate">Estimate:</label>     
             </div>
             <div class="form-group col-md-5">
-                <select class="form-control" id="estimate">
+                <select class="form-control" id="estimate" name="estimate" required oninvalid="this.setCustomValidity('Xin vui lòng chọn estimate')" oninput="this.setCustomValidity('')">
                 <option value="" selected disabled>Chọn estimate..</option>
                     @foreach($estimates as $e)
                         <option value="{{$e->id}}">{{$e->id}}</option>
@@ -95,11 +92,36 @@
                 </select>                   
             </div>
         </div>
+        
+        <div style="width:90%; margin:auto;" >
+            <table class="table table-striped table-bordered" id="tab_logic">
+                <thead>
+                    <tr>
+                        <th class="text-center">Tên sản phẩm</th>
+                        <th class="text-center">Đơn giá</th>
+                        <th class="text-center">Số lượng</th>
+                        <th class="text-center">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($items as $item)
+                    <tr>
+                        <input type="hidden" id="itemID[]" name="itemID[{{$item->id}}]" value="{{$item->id}}">
+                        <td>{{$item->name}}</td>                
+                        <td><input type="text" name="price"  class="form-control price" value="{{$item->price}}" readonly/></td>
+                        <td><input type="number" id="soluong" name="itemID[{{$item->id}}]"  class="form-control qty" min="0"/></td>
+                        <td><input type="text" name="total"  id="total" class="form-control total" readonly/></td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+
+
             
-        <div id="test"></div>
     <!--total of invoice-->
     <div class="row clearfix" style="margin-top:20px">
-        <div class="pull-right col-md-6"></div>
+        <div class="pull-right col-md-5"></div>
         <div class="pull-right col-md-6">
                 <table class="table table-bordered table-hover" id="tab_logic_total">
                     <tbody>
@@ -108,27 +130,56 @@
                             <td class="text-center"><input type="number" name='sub_total' placeholder='0.00' class="form-control" id="sub_total" readonly/></td>
                         </tr>
                     <tr>
-                        <th class="text-center">Tax</th>
+                        <th class="text-center">Thuế</th>
                         <td class="text-center"><div class="input-group mb-2 mb-sm-0">
-                            <input type="number" class="form-control" id="tax" placeholder="0" >
-                            <div class="input-group-addon"> %</div>
+                            <input type="text" readonly class="form-control" id="tax" value=<?php echo config('global.tax');?>>
+                            <div class="input-group-addon"> % </div>
                         </div></td>
                     </tr>
                     <tr>
-                        <th class="text-center">Tax Amount</th>
+                        <th class="text-center">Tổng thuế</th>
                         <td class="text-center"><input type="number" name='tax_amount' id="tax_amount" placeholder='0.00' class="form-control" readonly/></td>
                     </tr>
                     <tr>
-                        <th class="text-center">Grand Total</th>
+                        <th class="text-center">Tổng cộng</th>
                         <td class="text-center"><input type="number" name='total_amount' id="total_amount" placeholder='0.00' class="form-control" readonly/></td>
                     </tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+    <div class="form-row">
+        <div class="form-group col-md-8"></div>
+        <div class="form-group col-md-4">
+            <button type="submit"  class="btn btn-success">Thêm hoá đơn</button>
         </div>
     </div>
-        <button type="submit" class="btn btn-primary">Thêm</button>
  </form>
-    <!--end total of invoice-->
 </div>
-
+<!-- /**
+	 * Validation check emrty cart
+*/ -->
+<script>
+function validateForm() {
+    let cart = document.forms["form_add_invoice"]["total_amount"].value;
+    let create_at = document.forms["form_add_invoice"]["ngaytao"].value;
+    let exp = document.forms["form_add_invoice"]["hantt"].value;
+    var x = new Date(create_at);
+    var y = new Date(exp);
+    var today = new Date();
+    if(x.getTime() > y.getTime()){
+        alert("Hãy chọn lại ngày tạo.");
+        return false;
+    }
+    if(x.getTime() < today.getTime() || y.getTime() < today.getTime()){
+        alert("Chọn ngày lớn hơn ngày hiện tại.");
+        return false;
+    }
+    if (cart == "") {
+        alert("Hãy chọn sản phẩm cho invoice.");
+        return false;
+    }
+}
+</script>
 @endsection

@@ -9,4 +9,8 @@ class invoice extends Model
 {
     use HasFactory;
     protected $table = 'invoice';
+    protected $fillable = [
+        'create_date', 'status', 'total', 'expire_date', 'estimate_id', 'customer_id'
+    ];
+    
 }
