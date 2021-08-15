@@ -5,7 +5,7 @@
 @endsection
 
 @section('content')
-<form action='/show_add_invoice' method="post" onsubmit="return(Validate());" name="myform">
+<form action='/form-add-invoice' method="post" onsubmit="return(Validate());" name="myform">
 @csrf
     <div class="form-row" style="margin-left:100px;">
         <div class="form-group col-md-1">

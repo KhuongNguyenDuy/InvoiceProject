@@ -10,35 +10,37 @@
 
 @section('content')
 <?php
-    //fuction last day of next month
+    //fuction get last day of next month
     $date = new DateTime(date('Y-m-d'));
     $date->modify('last day of next month');
 ?>
 <div style="font-size: 0.8rem; margin:20px;">
-    <form action='/addInvoice' method="post" name="form_add_invoice" onsubmit="return validateForm()">
-    @csrf
+    <!--form submit request add invoice-->
+    <form action='/add-invoice' method="post" name="form_add_invoice" onsubmit="return validateForm()">
+         @csrf
+         <!--row create_at invoice -->
         <div class="form-row">
             <div class="form-group col-md-1">
                 <label for="ngaytao">Ngày tạo:</label>
             </div>
             <div class="form-group col-md-5">
-                <input class="date form-control" name="ngaytao" id="ngaytao" value="<?php echo date("Y-m-d"); ?>" type="text" >                          
+                <input class="date form-control" name="ngaytao" id="ngaytao" value="<?php echo date("Y/m/d"); ?>" type="text" >                          
             </div>
             <div class="form-group col-md-1">
                  <label for="hantt">Hạn thanh toán:</label>
             </div>
             <div class="form-group col-md-5">               
-                <input class="date form-control" id="hantt" name="hantt" type="text" value="<?php echo $date->format('Y-m-d');?>" >             
+                <input class="date form-control" id="hantt" name="hantt" type="text" value="<?php echo $date->format('Y/m/d');?>" >             
                 <!--#add datepicker-->
                 <script type="text/javascript">
                     $('.date').datepicker({  
-                    format: 'yyyy-mm-dd'
+                    format: 'yyyy/mm/dd'
                     });  
                 </script> 
                 <!--#daetpicker end-->
             </div>
         </div>
-
+        <!--row info phone customer-->
         <div class="form-row">
             <div class="form-group col-md-1">
                 <label for="khachang">Khách hàng:</label>
@@ -58,6 +60,7 @@
                 <input class="date form-control" type="text" value="" id="sdt" name="txtsdt" disabled>             
             </div>
         </div>
+        <!--row address, fax customwr-->
         <div class="form-row">
              <div class="form-group col-md-1">
                  <label for="diachi">Địa chỉ:</label>
@@ -72,6 +75,7 @@
                 <input class="form-control" type="text" value="" id="fax" disabled >             
             </div>
         </div>
+        <!--row estimate id, project name-->
         <div class="form-row">
             <div class="form-group col-md-1">
                 <label for="project">Project:</label>     
@@ -92,7 +96,7 @@
                 </select>                   
             </div>
         </div>
-        
+        <!--table show item-->
         <div style="width:90%; margin:auto;" >
             <table class="table table-striped table-bordered" id="tab_logic">
                 <thead>
@@ -106,28 +110,25 @@
                 <tbody>
                     @foreach($items as $item)
                     <tr>
-                        <input type="hidden" id="itemID[]" name="itemID[{{$item->id}}]" value="{{$item->id}}">
+                        <input type="hidden" name="id[]" value="<?php echo $item->id;?>">
                         <td>{{$item->name}}</td>                
-                        <td><input type="text" name="price"  class="form-control price" value="{{$item->price}}" readonly/></td>
-                        <td><input type="number" id="soluong" name="itemID[{{$item->id}}]"  class="form-control qty" min="0"/></td>
-                        <td><input type="text" name="total"  id="total" class="form-control total" readonly/></td>
+                        <td><input type="text" name="price[]" class="form-control price" value="<?php echo number_format($item->price);?>" readonly/></td>
+                        <td><input type="number" id="" name="qty[]"  class="form-control qty" min="0" max="100"/></td>
+                        <td><input type="text" name="total[]"  id="" class="form-control total" readonly/></td>
                     </tr>
                     @endforeach
                 </tbody>
             </table>
-        </div>
-
-
-            
-    <!--total of invoice-->
-    <div class="row clearfix" style="margin-top:20px">
-        <div class="pull-right col-md-5"></div>
-        <div class="pull-right col-md-6">
+        </div>    
+        <!--table show tax and total-->
+        <div class="row clearfix" style="margin-top:20px">
+            <div class="pull-right col-md-5"></div>
+            <div class="pull-right col-md-6">
                 <table class="table table-bordered table-hover" id="tab_logic_total">
                     <tbody>
                         <tr>
                             <th class="text-center">Tổng phụ</th>
-                            <td class="text-center"><input type="number" name='sub_total' placeholder='0.00' class="form-control" id="sub_total" readonly/></td>
+                            <td class="text-center"><input type="text" name='sub_total' placeholder='0.00' class="form-control" id="sub_total" readonly/></td>
                         </tr>
                     <tr>
                         <th class="text-center">Thuế</th>
@@ -138,28 +139,29 @@
                     </tr>
                     <tr>
                         <th class="text-center">Tổng thuế</th>
-                        <td class="text-center"><input type="number" name='tax_amount' id="tax_amount" placeholder='0.00' class="form-control" readonly/></td>
+                        <td class="text-center"><input type="text" name='tax_amount' id="tax_amount" placeholder='0.00' class="form-control" readonly/></td>
                     </tr>
                     <tr>
                         <th class="text-center">Tổng cộng</th>
-                        <td class="text-center"><input type="number" name='total_amount' id="total_amount" placeholder='0.00' class="form-control" readonly/></td>
+                        <td class="text-center"><input type="text" name='total_amount' id="total_amount" placeholder='0.00' class="form-control" readonly/></td>
                     </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-
-    <div class="form-row">
-        <div class="form-group col-md-8"></div>
-        <div class="form-group col-md-4">
-            <button type="submit"  class="btn btn-success">Thêm hoá đơn</button>
+        <!--row button sumit add invoice-->
+        <div class="form-row">
+            <div class="form-group col-md-8"></div>
+            <div class="form-group col-md-4">
+                <button type="submit"  class="btn btn-success">Thêm hoá đơn</button>
+            </div>
         </div>
-    </div>
  </form>
+ <!--#end form submit add invoice-->
 </div>
-<!-- /**
-	 * Validation check emrty cart
-*/ -->
+<!--
+	  Validation check emrty cart
+ -->
 <script>
 function validateForm() {
     let cart = document.forms["form_add_invoice"]["total_amount"].value;
@@ -168,18 +170,20 @@ function validateForm() {
     var x = new Date(create_at);
     var y = new Date(exp);
     var today = new Date();
-    if(x.getTime() > y.getTime()){
-        alert("Hãy chọn lại ngày tạo.");
-        return false;
-    }
-    if(x.getTime() < today.getTime() || y.getTime() < today.getTime()){
-        alert("Chọn ngày lớn hơn ngày hiện tại.");
-        return false;
-    }
-    if (cart == "") {
-        alert("Hãy chọn sản phẩm cho invoice.");
-        return false;
-    }
+    //alert(today.getdate());
+    //alert(x.getdate());
+    // if(x.getTime() > y.getTime()){
+    //     alert("Hãy chọn lại ngày tạo.");
+    //     return false;
+    // }
+    // if(x.getTime() < today.getTime() || y.getTime() < today.getTime()){
+    //     alert("Chọn ngày lớn hơn ngày hiện tại.");
+    //     return false;
+    // }
+    // if (cart == "") {
+    //     alert("Hãy chọn sản phẩm cho invoice.");
+    //     return false;
+    // }
 }
 </script>
 @endsection

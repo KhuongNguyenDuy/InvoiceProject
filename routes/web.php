@@ -20,37 +20,53 @@ Route::get('/admin',function(){
     return view('admin/home');
 });
 
-Route::get('/project', 'ProjectController@index');
-Route::get('/delete-project', 'ProjectController@delete_project');
-
-Route::get('/item', 'ItemController@index');
+/*
+|--------------------------------------------------------------------------
+| Admin Project
+|--------------------------------------------------------------------------
+*/
+Route::get('/projects', 'ProjectController@index');
+Route::get('/delete-project', 'ProjectController@destroy');
+/*
+|--------------------------------------------------------------------------
+| Admin Estimate
+|--------------------------------------------------------------------------
+*/
+Route::get('/estimates', 'EstimateController@index');
+/*
+|--------------------------------------------------------------------------
+| Admin Customer
+|--------------------------------------------------------------------------
+*/
+Route::get('/customers', 'CustomerController@index');
+/*
+|--------------------------------------------------------------------------
+| Admin Invoice
+|--------------------------------------------------------------------------
+*/
+Route::get('/invoices','InvoiceController@index');
+Route::get('/invoice{invoice_id}','InvoiceController@showInvoiceDetail');
+Route::post('/form-add-invoice','InvoiceController@showFormAddInvoice');
+Route::post('/add-invoice','InvoiceController@addInvoice');
+Route::get('/get-project','ProjectController@show');
+Route::get('/get-customer','InvoiceController@showCustomerInfo');
+Route::get('/export-invoice{invoice_id}','InvoiceController@exportInvoice');
+//Route::get('/export-invoice{id}','ProjectController@exportInvoice');
+/*
+|--------------------------------------------------------------------------
+| Admin Item
+|--------------------------------------------------------------------------
+*/
+Route::get('/items', 'ItemController@index');
 Route::get('/item/{projectID}', 'ItemController@findItemByProjectID');
+/*
+|--------------------------------------------------------------------------
+| Web Routes Invoice
+|--------------------------------------------------------------------------
+|
+*/
 
-Route::get('/customer', 'CustomerController@index');
 
-Route::get('/estimate', 'EstimateController@index');
-
-Route::get('/invoice', 'InvoiceController@index');
-
-Route::get('/invoice{invoice_id}', 'InvoiceController@show_invoice_detail');
-
-//Route::get('/addinvoice', 'InvoiceController@add_invoice');
-Route::post('/show_add_invoice', 'InvoiceController@show_add_invoice');
-Route::post('/addInvoice', 'InvoiceController@add_invoice');
-Route::get('/get-project', 'ProjectController@get_project');
-
-Route::get('/ajax-request', 'InvoiceController@create');
-//Route::post('/ajax-request', 'InvoiceController@store');
-
-//Route::get('/ajax-request-item', 'InvoiceController@getItemByAjax');
-Route::get('/get-item{id}', 'InvoiceController@getItem');
-//Route::post('/ajax-request', 'InvoiceController@store');
-
-//save file project to excel file
-Route::get('/projectexport{id}', 'ProjectController@export');
-
-//test export excel use php
-Route::get('/export{invoice_id}={type}', 'InvoiceController@export');
 
 
 

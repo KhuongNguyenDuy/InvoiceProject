@@ -1,0 +1,10 @@
+1. Tạo tk github bằng email của vaix
+2. Tạo project {yourname}-laravel và invite email nghilt@vaixgroup.com, nhuld@vaixgroup.com
+3. Tạo project laravel ở local và code tính năng sau:
+3.1. Tạo form cho phép nhập các mục như trong sheet input 
+3.2. Submit dữ liệu, lưu vào DB và download file invoice excel. Template là sheet invoice
+4. Sau khi code xong thì tạo pull request trên github vào yêu cầu Nghị và Nhu review.
+
+Yêu cầu:
+ - Code phải rõ ràng và theo convention như trong link này: https://www.mediawiki.org/wiki/Manual:Coding_conventions/PHP
+ - Comment viết bằng tiếng anh, đầy đủ, rõ ràng.

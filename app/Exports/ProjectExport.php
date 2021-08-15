@@ -18,21 +18,6 @@ class ProjectExport implements FromView, WithEvents
     public function registerEvents(): array
     {
         return [
-            // AfterSheet::class    => function(AfterSheet $event) {
-            //     $name_v = 'E3';
-            //     $address_v = 'E4';
-            //     $phone_v = 'E5'; 
-            //     $title_v = 'C7'; 
-            //     $size = 'C9:J30';
-            //     $event->sheet->getDelegate()->getStyle($name_v)->getFont()->setName('MS PMincho')->setSize(14);
-            //     $event->sheet->getDelegate()->getStyle($address_v)->getFont()->setName('MS PMincho')->setSize(10);
-            //     $event->sheet->getDelegate()->getStyle($phone_v)->getFont()->setName('MS PMincho')->setSize(11);
-            //     $event->sheet->getDelegate()->getStyle($title_v)->getFont()->setName('MS PMincho')->setSize(20);
-            //     $event->sheet->getDelegate()->getStyle($size)->getFont()->setName('MS PMincho')->setSize(10);
-          
-               
-            // },
-            
                 AfterSheet::class    => function(AfterSheet $event) {
                     $event->sheet->getStyle('B3:E3')->applyFromArray([
                         'font' => ['bold' => true]

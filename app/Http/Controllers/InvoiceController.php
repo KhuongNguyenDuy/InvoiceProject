@@ -2,149 +2,192 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\invoice;
+use App\Models\Invoice;
+use App\Models\InvoiceDetail;
+use App\Models\Customer;
+use App\Models\Project;
+use App\Models\Estimate;
+use App\Models\Item;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Reader\IReader;
+use PhpOffice\PhpSpreadsheet\Writer\IWriter;
 use PHPExcel_Style_Border;
 use DateTime;
 
+
 class InvoiceController extends Controller
 {
-    public function index2(){
-        $invoices = invoice::paginate(5);
-        return view('admin.invoice') -> with('invoices',$invoices);
-    }
+    /**
+     * Get all invoice
+     */
     public function index(){
-        //$items = item::all();
-        //$items = item::Paginate(10);
-        invoice::Paginate(10);
-        $invoices = DB::table('invoice')
-              ->join('customer', 'invoice.customer_id', '=', 'customer.id')
-              ->select('invoice.*','customer.name as customer_name','customer.adress as customer_address','customer.phone as customer_phone')
-              ->orderBy('invoice.id', 'ASC')
-              ->Paginate(10);
+        $invoices = Invoice::showAllInvoice();
         return view('admin.invoice', ['invoices' => $invoices]);
-        
      }
-     public function show_invoice_detail($invoice_id){
-        $invoice_details = DB::table('invoice')
-              ->join('invoice_detail', 'invoice.id', '=', 'invoice_detail.invoice_id')
-              ->join('customer', 'invoice.customer_id', '=', 'customer.id')
-              ->join('item', 'item.id', '=', 'invoice_detail.item_id')
-              ->join('project', 'item.project_id', '=', 'project.id')
-              ->select(
-                    'invoice.id','invoice.create_date','invoice.status','customer.name as customer_name',
-                    'customer.adress as customer_address','customer.phone as customer_phone',
-                    'customer.fax as customer_fax','invoice.estimate_id','invoice.expire_date',
-                    'item.name as item_name','invoice_detail.quantity','invoice_detail.price',
-                    'invoice_detail.amount','project.name as project_name'
-                     )
-              ->where('invoice.id','=',$invoice_id)
-              ->get();
-            return view('admin.invoice_detail', ['invoice_details' => $invoice_details]);
+
+     /**
+     * Show invoice detail by invoice_id
+     */
+     public function showInvoiceDetail($invoice_id){
+        $invoiceDetails = Invoice::showInvoiceDetail($invoice_id);
+        return view('admin.invoice_detail', ['invoiceDetails' => $invoiceDetails]);
      }
-     public function show_add_invoice(Request $request){
-         $customers = DB::table('customer')->get();
-         $projects = DB::table('project')->where('id','=',$request->project)->first();
-         $estimates = DB::table('estimate')->get();
-         $items = DB::table('item')->where('project_id',$request->project)->get();
-        return view('admin.add_invoice',[
+     /**
+      * get table customer, project, estimate, item
+      * show in to form add invoice
+     */
+     public function showFormAddInvoice(Request $request){
+         $customers = Customer::showAllCustomer();
+         $projects = Project::showProjectById($request->project);
+         $estimates = Estimate::showAllEstimate();
+         $items = Item::showItemByProjectId($request->project);
+         return view('admin.add_invoice',[
             'customers' => $customers,
             'projects' => $projects,
             'items' => $items,
             'estimates' => $estimates
         ]);
-        
      }
-     public function create(Request $request){
-        $id = $request->id;
-        $customers = DB::table('customer')->where('id',$id)->get();
-        return response()->json(['success'=>true,'info' => $customers]);
-     }
-     public function getItemByAjax(Request $request){
-        $project_id = $request->id;
-        $items = DB::table('item')->where('project_id',$project_id)->get();
-        $data = '<table class="table table-bordered table-hover" id="tab_logic">';
-        $data .= ' <tr>
-                        <th class="text-center">Tên sản phẩm</th>
-                        <th class="text-center">Đơn giá</th>
-                        <th class="text-center">Số lượng</th>
-                        <th class="text-center">Thành tiền</th>
-                    </tr>';
-        foreach($items as $item){
-            $data.='<tr>';
-                $data.='<td>'.$item->name.'</td>';                
-                $data.= '<td><input type="number" name="price[]" placeholder="Enter Unit Price" class="form-control price" step="0.00" min="0" value="'.$item->price.'" readonly/></td>';
-                $data.= '<td><input type="number" id="soluong" name="soluong" placeholder="Enter Qty" class="form-control qty" step="0" min="0"/></td>';
-                $data.='<td><input type="number" name="total[]" placeholder="0.00" class="form-control total" readonly/></td>';
-            $data.='</tr>';
-        }
-        $data.= '</table>';
-        echo $data;
- 
-     }
-     public function add_invoice(Request $request){
-            DB::beginTransaction();
-            try {
-                $id = DB::table('invoice')->insertGetId(
-                    [
-                        'create_date' => $request->ngaytao,
-                        'status' => false,
-                        'total' => $request->total_amount,
-                        'expire_date' => $request->hantt,
-                        'estimate_id' => $request->estimate,
-                        'customer_id' => $request->khachhang
-                     ]
-                );
-                DB::commit();
-               
-            } catch (Exception $e) {
+
+     /**
+      * get table customer, project, estimate, item
+      * show in to form add invoice
+     */
+     public function addInvoice(Request $request){
+         $invoiceID = 0; // 0: insert fail. >0: insert success
+         DB::beginTransaction();
+         try {
+            $invoice = array(
+                'create_date' => $request->ngaytao,
+                'status' => false,
+                'total' => (float)str_replace(",", "", $request->total_amount),
+                'expire_date' => $request->hantt,
+                'estimate_id' => $request->estimate,
+                'customer_id' => $request->khachhang
+            );
+            $invoiceID = Invoice::insert($invoice);
+            DB::commit();
+            }
+            catch (Exception $e) {
                 DB::rollback();
             }
-           $array = $request->itemID;
-           foreach($array as $key=>$value){
-               if($value > 0){
-                  DB::table('invoice_detail')->insert(
-                      [
-                          'invoice_id' => $id,
-                          'item_id' => $key,
-                          'quantity' => $value,
-                          'price' => $request->price,
-                          'amount' => $request->price*$value
-                       ]
-                  );
-             }
-           }
-           return redirect('invoice')->with('success', 'Thêm hoá đơn thành công!'); //return redirect()->back()->with('success', 'Thêm hoá đơn thành công!');
+            // if($invoiceID > 0){
+            //     $array_price = $request->price;
+            //     $array_qty = $request->qty;
+            //     $array_id = $request->id;
+            //     $array_total = $request->total;
+            //     foreach ($array_id as $id => $key) { //convert to array with key and value
+            //         $result[$key] = array(
+            //             'price'  => $array_price[$id],
+            //             'qty' => $array_qty[$id],
+            //             'total'    => $array_total[$id],
+            //         );
+            //     }
+            //     foreach($result as $key => $value){
+            //         if($value['qty'] > 0){
+            //             $invoiceDetail = array(
+            //                 'invoice_id' => $invoiceID,
+            //                 'item_id' => $key,
+            //                 'quantity' => $value['qty'],
+            //                 'price' => $value['price'],
+            //                 'amount' => $value['total']
+            //             );
+            //             InvoiceDetail::insert($invoiceDetail);
+            //         }
+            //     }
+            //    return redirect('invoices')->with('success', 'Thêm hoá đơn thành công!'); //return redirect()->back()->with('success', 'Thêm hoá đơn thành công!');
+           // }
+        }
+
+    //  public function getItemByProjectId($id){
+    //     $items = Item::showItemByProjectId($id);
+    //     return view('admin.add_invoice', ['items' => $items]);
+    //  }
+    /**
+     * find customer info by id customer
+     */
+    public function showCustomerInfo(Request $request){
+        $customers = Customer::showCustomerById($request->id);
+        return response()->json(['success'=>true,'info' => $customers]);
      }
-     public function getItem($id){
-        //$project_id = $request->id;
-        $items = DB::table('item')->where('project_id',$id)->get();
-        return view('admin.add_invoice', ['items' => $items]);
+  
+
+
+     /**
+      * export file excel 2
+      */
+     public function exportInvoice($invoice_id){
+         //get invoie detail from model
+        $invoiceDetails = Invoice::showInvoiceDetail($invoice_id);
+        $count = $invoiceDetails->count(); 
+        $date = new DateTime($invoiceDetails[0]->create_date);
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load('TrainingProject.xlsx');
+        //remove worksheet Input
+        $sheetIndex = $spreadsheet->getIndex(
+            $spreadsheet->getSheetByName('Input')
+        );
+        $spreadsheet->removeSheetByIndex($sheetIndex);
+        //set active sheet Invoice
+        $spreadsheet->setActiveSheetIndexByName('Invoice');
+        $worksheet = $spreadsheet->getActiveSheet();
+        $worksheet->getCell('E9')->setValue($date->format('Y/m/d'));
+        $worksheet->getCell('E10')->setValue($invoiceDetails[0]->customer_name);
+        $worksheet->getCell('E11')->setValue($invoiceDetails[0]->customer_address);
+        $worksheet->getCell('E12')->setValue($invoiceDetails[0]->customer_phone);
+        $worksheet->getCell('H12')->setValue($invoiceDetails[0]->customer_fax);
+        $worksheet->getCell('E13')->setValue($invoiceDetails[0]->estimate_id);
+        $worksheet->getCell('E15')->setValue($invoiceDetails[0]->project_name);
+        $expire_date = new DateTime($invoiceDetails[0]->expire_date);
+        $worksheet->getCell('E31')->setValue($expire_date->format('Y/m/d'));
+        //table content list item
+        $spreadsheet->getActiveSheet()->insertNewRowBefore(20, $count-1); //insert row 
+        $rows = 19;
+        $sub_total = 0;
+        $tax = config('global.tax'); //call file global- get tax
+        for ( $i = 0; $i < $count; $i++ ) {
+            $sub_total += $invoiceDetails[$i]->amount;
+            $worksheet->mergeCells('D'.$rows.':G'.$rows);
+            $worksheet->setCellValue('C' . $rows, $i+1);
+            $worksheet->setCellValue('D' . $rows, $invoiceDetails[$i]->item_name);
+            $worksheet->setCellValue('H' . $rows, ($invoiceDetails[$i]->quantity).'式');
+            $worksheet->setCellValue('I' . $rows, $invoiceDetails[$i]->price);
+            $worksheet->setCellValue('J' . $rows, $invoiceDetails[$i]->amount);
+            $rows++;
+        }
+        $worksheet->setCellValue('C' . $rows, $i+1);
+        $sub_tax = $sub_total * $tax / 100;
+        $worksheet->setCellValue('J'.(22+$count),$sub_total);
+        $worksheet->setCellValue('J'.(23+$count),$sub_tax);
+        $worksheet->setCellValue('J'.(24+$count),($sub_tax+$sub_total));
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment;filename="myfile.xls"');
+        header('Cache-Control: max-age=0');
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xls');
+        $writer->save('php://output');
      }
-   
-     public function store(Request $request)
-     {
-         $data = $request->all();
-         return response()->json(['success'=>'Ajax request submitted successfully']);
-     }
-     public function export($invoice_id,$type){
-        $invoice_details = DB::table('invoice')
-        ->join('invoice_detail', 'invoice.id', '=', 'invoice_detail.invoice_id')
-        ->join('customer', 'invoice.customer_id', '=', 'customer.id')
-        ->join('item', 'item.id', '=', 'invoice_detail.item_id')
-        ->join('project', 'item.project_id', '=', 'project.id')
+
+    /**
+      * export file excel 2
+      */
+      public function exportInvoice2($invoice_id,$type){
+        $invoice_details = DB::table('invoices')
+        ->join('invoice_item', 'invoices.id', '=', 'invoice_item.invoice_id')
+        ->join('customers', 'invoices.customer_id', '=', 'customers.id')
+        ->join('items', 'items.id', '=', 'invoice_item.item_id')
+        ->join('projects', 'items.project_id', '=', 'projects.id')
         ->select(
-              'invoice.id','invoice.create_date','invoice.status','customer.name as customer_name',
-              'customer.adress as customer_address','customer.phone as customer_phone',
-              'customer.fax as customer_fax','invoice.estimate_id','invoice.expire_date',
-              'item.name as item_name','invoice_detail.quantity','invoice_detail.price',
-              'invoice_detail.amount','project.name as project_name'
+              'invoices.id','invoices.create_date','invoices.status','customers.name as customer_name',
+              'customers.adress as customer_address','customers.phone as customer_phone',
+              'customers.fax as customer_fax','invoices.estimate_id','invoices.expire_date',
+              'items.name as item_name','invoice_item.quantity','invoice_item.price',
+              'invoice_item.amount','projects.name as project_name'
                )
-        ->where('invoice.id','=',$invoice_id)
+        ->where('invoices.id','=',$invoice_id)
         ->get();
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -201,7 +244,7 @@ class InvoiceController extends Controller
         $sheet->getRowDimension('41')->setRowHeight(5.25, 'pt');
 
         /**
-         * 
+         *
          */
         $sheet->mergeCells('E3:K3')->setCellValue('E3', 'VAIX CO., LTD');
         $sheet->getStyle("E3")->getFont()->setBold(true)->setName('MS PMincho')->setSize(14);
@@ -261,8 +304,8 @@ class InvoiceController extends Controller
                 ],
             ],
         ];
-        
-        $sheet->getStyle('C18:J'.($count+27))->applyFromArray($styleArray);        
+
+        $sheet->getStyle('C18:J'.($count+27))->applyFromArray($styleArray);
         $sheet->setCellValue('C18','#');
         $sheet->setCellValue('D18','項目');
         $sheet->setCellValue('H18','数量');
@@ -272,13 +315,13 @@ class InvoiceController extends Controller
         $sheet->getStyle('C18:J'.($count+27))->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
         $sheet->getStyle('C18:J'.($count+27))->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
         $sheet->getStyle('C18:J'.($count+27))->getAlignment()->setWrapText(true);
-       
-        $rows = 19;        
+
+        $rows = 19;
         $sub_total = 0;
         $tax = config('global.tax'); //take tax in file global
-     
-        for ( $i = 0; $i < $count; $i++ ) { 
-            $sub_total += $invoice_details[$i]->amount; 
+
+        for ( $i = 0; $i < $count; $i++ ) {
+            $sub_total += $invoice_details[$i]->amount;
             $spreadsheet->getActiveSheet()->mergeCells('D'.$rows.':G'.$rows);
             $sheet->setCellValue('C' . $rows, $i+1);
             $sheet->setCellValue('D' . $rows, $invoice_details[$i]->item_name);
@@ -306,7 +349,7 @@ class InvoiceController extends Controller
         $sheet->setCellValue('J'.(22+$count),$sub_total);
         $sheet->setCellValue('J'.(23+$count),$sub_tax);
         $sheet->setCellValue('J'.(24+$count),($sub_tax+$sub_total));
-        
+
         $sheet->mergeCells('C'.(25+$count).':J'.(27+$count))->setCellValue('C'.(25+$count),'備考');
         $sheet->getStyle('C'.(25+$count))->applyFromArray($styleArray2);
         $sheet->getStyle('C'.(25+$count))->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
@@ -340,12 +383,12 @@ class InvoiceController extends Controller
             ],
         ];
         $sheet->getStyle('B2:K'.(39+$count))->applyFromArray($styleborder);
-        
+
 
         /**
          * save file excel in to folder public
          */
-        
+
         $date = date("Y-m-d h-i-sa");
         $fileName = "invoice-".$date.".".$type;
         if($type == 'xlsx') {
@@ -356,18 +399,13 @@ class InvoiceController extends Controller
         $a->save($fileName);
         header("Content-Type: application/vnd.ms-excel");
         return redirect(url("/invoice"));
-     }   
+     }
+
 }
 
 
 
-                                
-                             
-                           
-                           
-                            
-                               
-                    
-                            
-                                
-            
+
+
+
+

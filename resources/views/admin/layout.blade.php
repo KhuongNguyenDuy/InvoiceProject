@@ -30,7 +30,7 @@
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="admin">
                 <div class="sidebar-brand-text mx-3">Admin Page</div>
             </a>
                 
@@ -40,7 +40,7 @@
             <!-- Nav Item - Pages Collapse Menu -->
             <li class="nav-item">
             <li class="nav-item">
-                <a class="nav-link collapsed" href="{{URL::to('/project')}}">
+                <a class="nav-link collapsed" href="{{URL::to('/projects')}}">
                     <span>QUẢN LÝ PROJECT</span>
                 </a>
             </li>
@@ -48,27 +48,27 @@
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
             <li class="nav-item">
-                <a class="nav-link collapsed" href="{{URL::to('/item')}}" >
+                <a class="nav-link collapsed" href="{{URL::to('/items')}}" >
                     <span>QUẢN LÝ ITEM</span>
                 </a>
             </li>
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
              <li class="nav-item">
-                <a class="nav-link collapsed" href="{{URL::to('/estimate')}}">
+                <a class="nav-link collapsed" href="{{URL::to('/estimates')}}">
                     <span>QUẢN LÝ ESTIMATE</span>
                 </a>
             </li>
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
             <li class="nav-item">
-                <a class="nav-link collapsed" href="{{URL::to('/customer')}}">
+                <a class="nav-link collapsed" href="{{URL::to('/customers')}}">
                     <span>QUẢN LÝ KHÁCH HÀNG</span>
                 </a>
             </li>
             <hr class="sidebar-divider d-none d-md-block">
             <li class="nav-item">
-                <a class="nav-link collapsed" href="{{URL::to('/invoice')}}">
+                <a class="nav-link collapsed" href="{{URL::to('/invoices')}}">
                     <span>QUẢN LÝ HOÁ ĐƠN</span>
                 </a>
             </li>
