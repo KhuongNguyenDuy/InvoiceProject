@@ -11289,3 +11289,7 @@ footer.sticky-footer .copyright {
 body.sidebar-toggled footer.sticky-footer {
   width: 100%;
 }
+.help-block{
+  margin-bottom: 0.3rem;
+  margin-top:5px;
+}

@@ -8,7 +8,7 @@
 </div>
 	<!--check session add invoice if success-->
 	@if (session('success'))
-		<div class="alert alert-success">
+		<div class="alert alert-success" style="margin:10px;">
 			{{ session('success') }}
 		</div>
 	@endif

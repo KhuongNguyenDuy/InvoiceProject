@@ -128,7 +128,7 @@
                     <tbody>
                         <tr>
                             <th class="text-center">Tổng phụ</th>
-                            <td class="text-center"><input type="text" name='sub_total' placeholder='0.00' class="form-control" id="sub_total" readonly/></td>
+                            <td class="text-center"><input type="text" name='sub_total' placeholder='0' class="form-control" id="sub_total" readonly/></td>
                         </tr>
                     <tr>
                         <th class="text-center">Thuế</th>
@@ -139,11 +139,11 @@
                     </tr>
                     <tr>
                         <th class="text-center">Tổng thuế</th>
-                        <td class="text-center"><input type="text" name='tax_amount' id="tax_amount" placeholder='0.00' class="form-control" readonly/></td>
+                        <td class="text-center"><input type="text" name='tax_amount' id="tax_amount" placeholder='0' class="form-control" readonly/></td>
                     </tr>
                     <tr>
                         <th class="text-center">Tổng cộng</th>
-                        <td class="text-center"><input type="text" name='total_amount' id="total_amount" placeholder='0.00' class="form-control" readonly/></td>
+                        <td class="text-center"><input type="text" name='total_amount' id="total_amount" value="0" placeholder='0' class="form-control cart_total" readonly/></td>
                     </tr>
                     </tbody>
                 </table>
@@ -165,25 +165,45 @@
 <script>
 function validateForm() {
     let cart = document.forms["form_add_invoice"]["total_amount"].value;
-    let create_at = document.forms["form_add_invoice"]["ngaytao"].value;
-    let exp = document.forms["form_add_invoice"]["hantt"].value;
-    var x = new Date(create_at);
-    var y = new Date(exp);
+    var cart_total = parseInt(cart.replace(new RegExp(',', 'g'),"")); //convert string to int
+    if (cart_total <= 0) { //if no choose item
+         alert("Hãy chọn sản phẩm cho hoá đơn.");
+         return false;
+     }
+    let create_at = document.forms["form_add_invoice"]["ngaytao"].value; //get datepicker create day
+    let expire_at = document.forms["form_add_invoice"]["hantt"].value; //get datepicker expire
+    var current_day = new Date(getCurrentDay());
+    var create_day = new Date(create_at); 
+    var expire_day = new Date(expire_at); 
+    if(compareDate(current_day,create_day) == 1){ //if current day> create day
+        alert("Ngày tạo nhỏ hơn ngày hiện tại");
+        return false;
+    }
+    if(compareDate(create_day,expire_day) == 1){ //if create day > expire day
+        alert("Ngày tạo lớn hơn hạn thanh toán");
+        return false;
+    }
+}
+//function compare two date
+function compareDate(date1, date2) {
+    if(date1 > date2){
+        return 1;
+    }
+    else if(date1 < date2){
+        return -1;
+    }
+    else{
+        return 0;
+    }
+}
+//function get current day
+function getCurrentDay(){
     var today = new Date();
-    //alert(today.getdate());
-    //alert(x.getdate());
-    // if(x.getTime() > y.getTime()){
-    //     alert("Hãy chọn lại ngày tạo.");
-    //     return false;
-    // }
-    // if(x.getTime() < today.getTime() || y.getTime() < today.getTime()){
-    //     alert("Chọn ngày lớn hơn ngày hiện tại.");
-    //     return false;
-    // }
-    // if (cart == "") {
-    //     alert("Hãy chọn sản phẩm cho invoice.");
-    //     return false;
-    // }
+    var d = String(today.getDate()).padStart(2, '0');
+    var m = String(today.getMonth() + 1).padStart(2, '0'); 
+    var y = today.getFullYear();
+    today = y + '/' + m + '/' + d;
+    return today;
 }
 </script>
 @endsection
