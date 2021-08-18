@@ -66,12 +66,13 @@
     <!--#end form submit add customer-->
 </div>
 <script>
-function validateForm() {
+    function validateForm() {
     let name = document.forms["form_edit_customer"]["customer_name"].value;
     let address = document.forms["form_edit_customer"]["address"].value;
     let phone = document.forms["form_edit_customer"]["phone_number"].value;
     let fax = document.forms["form_edit_customer"]["fax_number"].value;
     var flag = 0;
+    
     if(name.length > 255){
         document.getElementById("mess_name").style.color = "red";
         flag = 1;
@@ -84,6 +85,15 @@ function validateForm() {
     }else{
         document.getElementById("mess_address").style.color = "#858796";
     }
+    // var japan_phone = /(\d{2,3})\-?(\d{3,4})\-?(\d{4})/g;
+    // if (japan_phone.test(phone) == false) {
+    //         alert('Số điện thoại của bạn không đúng định dạng!');
+    //         return false;
+    // }
+    // var numb = phone.match(/\d/g);//get number only
+    // numb = numb.join("");
+    // var faxn = fax.match(/\d/g);//get number only
+    // faxn = faxn.join("");
     if(phone.length > 11){
         document.getElementById("mess_phone").style.color = "red";
         flag = 1;
@@ -99,6 +109,31 @@ function validateForm() {
     if(flag == 1){
         return false;
     }
+    
+    // var japan_fax = /(\d{2,3})\-?(\d{3,4})\-?(\d{4})/g;
+    // if (japan_fax.test(faxn) == false) {
+    //         alert('Số fax của bạn không đúng định dạng!');
+    //         return false;
+    // }
+
+    var numbers = /^[0-9]+$/;
+    if(phone.match(numbers)){
+    }
+    else{
+        alert('Không phải số điện thoại');
+        document.forms["form_edit_customer"]["phone_number"].focus();
+        return false;
+    }
+    var numbers = /^[0-9]+$/;
+    if(fax.match(numbers)){
+    }
+    else{
+        alert('Không phải số fax');
+        document.forms["form_edit_customer"]["fax_number"].focus();
+        return false;
+    }
+    
 }
+        
 </script>
 @endsection

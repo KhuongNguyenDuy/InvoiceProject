@@ -71,6 +71,12 @@ Route::get('/item/{projectID}', 'ItemController@findItemByProjectID');
 |--------------------------------------------------------------------------
 |
 */
+Route::get('/file-download', 'EstimateController@downloadFile'); //download file
+Route::get('/file-upload', 'EstimateController@uploadFile');
+Route::post('/store', 'EstimateController@uploadStore');
+
+
+
 
 
 

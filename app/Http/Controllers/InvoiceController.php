@@ -142,7 +142,9 @@ class InvoiceController extends Controller
         $worksheet->getStyle('E13')->getNumberFormat()->setFormatCode("00000000000");
         $worksheet->getCell('E15')->setValue($invoiceDetails[0]->project_name);
         //table content list item
-        $worksheet->insertNewRowBefore(20, $count-1); //insert $count-1 row before row 20
+        if($count > 1){
+            $worksheet->insertNewRowBefore(20, $count-1); //insert $count-1 row before row 20
+        }
         $rows = 19;
         $sub_total = 0;
         $tax = config('global.tax'); //call file global- get tax
@@ -165,9 +167,9 @@ class InvoiceController extends Controller
         $worksheet->getCell('E'.(30+$count))->setValue($expire_date->format('Y/m/d'));
         $worksheet->setCellValueExplicit('E'.(34+$count),"21410410265442",\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
         header('Content-Type: application/vnd.ms-excel');
-        header('Content-Disposition: attachment;filename="myfile.xlsx"');
+        header('Content-Disposition: attachment;filename="Invoice.xls"');
         header('Cache-Control: max-age=0');
-        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xls');
         $writer->save('php://output');
      }
 
